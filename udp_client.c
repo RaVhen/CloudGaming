@@ -51,39 +51,82 @@ int main(int argc, char **argv)
 
 	int socket_id;
 	char buffer[4096];
+	char path[] = "toto.h264";
 	int value = 11;
+	char* mssg = "coucou";
 	struct sockaddr_in sockname;
 	int sockaddr_in_length = sizeof(struct sockaddr_in);
 	int r;
 	socket_id = create_udp_client("localhost", 2000, &sockname);
 	
-	
 	// génération du message à envoyer
-	snprintf(buffer, sizeof(buffer), "%d", value);
+	snprintf(buffer, sizeof(buffer), "%s", mssg);
+	for(r = 0; r < 4096; r++)
+	  buffer[r] = r%128;
+	printf("BUFFER: ");
+	for(r = 0; r < 4096; r++)
+	  printf("%d_",buffer[r]);
+	printf("%d\n",r);
 	
-	
+	printf("%d\n",sizeof(buffer));
 	
 	// envoi du message
-	if(-1 == (r = sendto(socket_id, buffer, strlen(buffer), 0, (struct sockaddr *) &sockname, sockaddr_in_length))) {
+	if(-1 == (r = sendto(socket_id, buffer, sizeof(buffer), 0, (struct sockaddr *) &sockname, sockaddr_in_length))) {
 		fprintf(stderr, "envoi au serveur impossible\n");
 		shutdown(socket_id, 2);
 		close(socket_id);
 		exit(EXIT_FAILURE);
 	}
+	printf("SEND %d\n",r);
+	if(-1 == (r = recvfrom(socket_id, buffer, sizeof(buffer), 0, (struct sockaddr*) &sockname, (socklen_t *)&sockaddr_in_length))) {
+		printf("problème de réception\n");
+		shutdown(socket_id, 2);
+		close(socket_id);
+		exit(EXIT_FAILURE);
+	}
+	printf("RECV %d\n",r);
+	buffer[r+1] = '\0';
+	int j = 0;
+	/*for(j = 0; j<4096;j++){
+	  printf("%c ",buffer[j]);
+	}
+	printf("\n");*/
+	//printf("BUFFER: %s %d\n", buffer,(int)strlen(buffer));
 	
-	
-	// attente du message de retour
-	if(-1 == (r = recvfrom(socket_id, buffer, sizeof(buffer)-1, 0, (struct sockaddr*) &sockname, (socklen_t *)&sockaddr_in_length))) {
+
+	FILE *fp;char new_file[]="copied.h264";
+	fp=fopen(new_file,"w+");
+
+	while(strcmp(buffer,"end")){
+
+	//printf("BUFFER: %s %ld\n", buffer,sizeof(buffer));
+	int n;
+	if(n = fwrite(buffer,1,r,fp)<0)
+	  {
+	    printf("error writting file\n");
+	    exit(1);
+	  }
+	printf("%d\n",n);
+	if(-1 == (r = recvfrom(socket_id, buffer, sizeof(buffer), 0, (struct sockaddr*) &sockname, (socklen_t *)&sockaddr_in_length))) {
 		fprintf(stderr, "problème de réception\n");
 		shutdown(socket_id, 2);
 		close(socket_id);
 		exit(EXIT_FAILURE);
 	}
+	printf("RECV %d\n",r);
+	buffer[r+1] = '\0';
+	}
+	fclose(fp);
+	
+	// attente du message de retour
+	
 	
 	
 	// affichage du résultat
 	buffer[r+1] = '\0';
-	printf("%d * %d = %ld\n", value, value, strtol(buffer, NULL, 10));
+	printf("%s\n", buffer);
+	//printf("%d * %d = %ld\n", value, value, strtol(buffer, NULL, 10));
+	printf("BONJOUR PJ\n");
 	shutdown(socket_id, 2);
 	close(socket_id);
 	
