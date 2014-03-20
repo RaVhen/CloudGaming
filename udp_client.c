@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	FILE *fp;char new_file[]="copied.h264";
 	fp=fopen(new_file,"w+");
 
-	while(strcmp(buffer,"end")){
+	while(r > 3){
 
 	//printf("BUFFER: %s %ld\n", buffer,sizeof(buffer));
 	int n;
@@ -107,6 +107,8 @@ int main(int argc, char **argv)
 	    exit(1);
 	  }
 	printf("%d\n",n);
+	
+	printf("%c\n",buffer[4095]);
 	if(-1 == (r = recvfrom(socket_id, buffer, sizeof(buffer), 0, (struct sockaddr*) &sockname, (socklen_t *)&sockaddr_in_length))) {
 		fprintf(stderr, "problème de réception\n");
 		shutdown(socket_id, 2);
@@ -114,6 +116,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	printf("RECV %d\n",r);
+	printf("%c\n",buffer[4095]);
 	buffer[r+1] = '\0';
 	}
 	fclose(fp);

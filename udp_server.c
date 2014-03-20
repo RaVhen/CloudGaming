@@ -83,15 +83,15 @@ int main(int argc, char **argv)
     printf("%d_",buffer[r]);
   printf("%d\n",r);
   printf("RECV %d\n",numbytes);
-
-
+  
+   printf("DEBUT TRANSMISSION\n");
   do {
     int n;
     memset(&buffer[0], 0, sizeof(buffer));
     n = fread(buffer, 1, MAXBUFSIZE , fp);
     printf("%d \n",n);
     //buffer[n] = '\0';
-    numbytes = sendto(socket_id, buffer, n+1, 0,
+    numbytes = sendto(socket_id, buffer, n, 0,
 		      (struct sockaddr *)&sockname, sockaddr_in_length);
     printf("%c\n",buffer[4095]);
     //for(n = 0; n < sizeof(buffer);n++)
